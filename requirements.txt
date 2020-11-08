@@ -1,0 +1,4 @@
+transformers==2.11.0
+scikit-learn==0.23.1
+seqeval==0.0.12
+tqdm
