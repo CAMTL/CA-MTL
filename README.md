@@ -198,6 +198,18 @@ All parameters are described in their [documentation](https://huggingface.co/tra
 
 MIT
 
+## How do I cite CA-MTL
+```
+@inproceedings{
+    pilault2021conditionally,
+    title={Conditionally Adaptive Multi-Task Learning: Improving Transfer Learning in {\{}NLP{\}} Using Fewer Parameters {\&} Less Data},
+    author={Jonathan Pilault and Amine El hattami and Christopher Pal},
+    booktitle={International Conference on Learning Representations},
+    year={2021},
+    url={https://openreview.net/forum?id=de11dbHzAMF}
+}
+```
+
 ## Contact and Contribution
 For any question or request, please create a Github issue in this repository.
 
