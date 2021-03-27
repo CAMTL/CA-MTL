@@ -198,7 +198,7 @@ All parameters are described in their [documentation](https://huggingface.co/tra
 
 MIT
 
-## How do I cite CA-MTL
+## How do I cite CA-MTL ?
 ```
 @inproceedings{
     pilault2021conditionally,
