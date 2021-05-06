@@ -73,12 +73,12 @@ export OUTPUT_DIR=/path/to/output/dir
 
 ### Using the created virtual environment
 ```bash
-python run.py --model_name_of_path CA-MTL-base --data_dir $DATA_DIR --output_dir $OUTPUT_DIR --do_train
+python run.py --model_name_or_path CA-MTL-base --data_dir $DATA_DIR --output_dir $OUTPUT_DIR --do_train
 ```
 
 ### Using the pulled docker image
 ```bash
-docker run -v /data:$DATA_DIR $DOCKER_IMG --model_name_of_path CA-MTL-base --data_dir $DATA_DIR --output_dir $OUTPUT_DIR --do_train
+docker run -v /data:$DATA_DIR $DOCKER_IMG --model_name_or_path CA-MTL-base --data_dir $DATA_DIR --output_dir $OUTPUT_DIR --do_train
 
 ```
 
