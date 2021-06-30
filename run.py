@@ -94,6 +94,7 @@ def main():
         model_args,
         data_args,
         config=config)
+    model.freeze_encoder_layers(model_args)
 
     logger.info(model)
 

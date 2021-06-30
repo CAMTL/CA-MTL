@@ -27,6 +27,10 @@ class CaMtlArguments:
                     "bert-base-uncased, bert-large-cased, bert-large-uncased"
         }
     )
+    freeze_encoder_layers: str = field(
+        default=None,
+        metadata={"help": "Freeze encoder layers. format: <start_layer>-<end_layer>"},
+    )
 
 
 class CaMtl(BertPreTrainedModel):
@@ -143,3 +147,33 @@ class CaMtl(BertPreTrainedModel):
             return "bert-base-cased"
         else:
             return model_name_or_path
+
+    def freeze_encoder_layers(
+        self,
+        model_args,
+        unfrozen_modules=[
+            "random_weight_matrix",
+            "film.gb_weights",
+            "ln_weight_modulation.gb_weights",
+            "adapter",
+        ],
+    ):
+        if model_args.freeze_encoder_layers is not None:
+            start_layer, end_layer = model_args.freeze_encoder_layers.split("-")
+
+            for name, param in self.bert.named_parameters():
+                requires_grad = True
+                match = re.match(self.bert.get_layer_regexp(), name)
+                if match:
+                    layer_number = int(match.groups()[0])
+                    requires_grad = not int(start_layer) <= layer_number <= int(
+                        end_layer
+                    ) or any([module in match.string for module in unfrozen_modules])
+                elif name.startswith("embedding"):
+                    requires_grad = False
+                param.requires_grad = requires_grad
+
+        for name, param in self.bert.named_parameters():
+            logger.info(
+                "%s - %s", name, ("Unfrozen" if param.requires_grad else "FROZEN")
+            )
