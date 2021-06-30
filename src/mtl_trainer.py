@@ -22,6 +22,18 @@ class MultiTaskTrainingArguments(TrainingArguments):
         default=False,
         metadata={"help": "Use MT-Uncertainty sampling method"},
     )
+    uniform_mt_sampling: bool = field(
+        default=False,
+        metadata={"help": "Sample each task an equal amount to times per epoch."},
+    )
+    percent_of_max_data_size: float = field(
+        default=1.0,
+        metadata={
+            "help": "If uniform_mt_sampling=True, specify the samples per task per "
+            "epoch based on the maximum dataset length. If below 0.0 or above 1.0,"
+            "it will be set to the closest of 0.0 or 1.0."
+        },
+    )
 
 
 class MultiTaskTrainer(Trainer):
@@ -166,7 +178,7 @@ class MultiTaskTrainer(Trainer):
                         * len(self.loaders)
                         / self.args.train_batch_size
                     )
-                elif self.args.uncert_batch:
+                elif self.args.use_mt_uncertainty:
                     return int(
                         max(loader_len)
                         * len(self.loaders)
