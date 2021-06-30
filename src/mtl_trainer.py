@@ -178,7 +178,7 @@ class MultiTaskTrainer(Trainer):
                         * len(self.loaders)
                         / self.args.train_batch_size
                     )
-                elif self.args.uncert_batch:
+                elif self.args.use_mt_uncertainty:
                     return int(
                         max(loader_len)
                         * len(self.loaders)
