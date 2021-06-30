@@ -625,3 +625,7 @@ class CaMtlBaseEncoder(BertPreTrainedModel):
                 unique_task_id
             ]
         return task_type
+
+    @classmethod
+    def get_layer_regexp(cls):
+        return r"encoder.layer.*\.([0-9]+)\..*"

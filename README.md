@@ -18,7 +18,7 @@
 </p>
 
 
-The source code uses the [huggingface implementation](https://github.com/huggingface/transformers) of transformers adapted for multitask training.
+The source code uses the [huggingface implementation](https://github.com/huggingface/transformers) of transformers adapted for multitask training. Our paper was accepted at ICLR 2021 (https://openreview.net/pdf?id=de11dbHzAMF).
 
 
 ## Requirements
@@ -78,10 +78,12 @@ python run.py --model_name_or_path CA-MTL-base --data_dir $DATA_DIR --output_dir
 
 ### Using the pulled docker image
 ```bash
-docker run -v /data:$DATA_DIR $DOCKER_IMG --model_name_or_path CA-MTL-base --data_dir $DATA_DIR --output_dir $OUTPUT_DIR --do_train
+docker run -v /data:$DATA_DIR $DOCKER_IMG --model_name_or_path CA-MTL-base --data_dir $DATA_DIR --output_dir $OUTPUT_DIR --do_train --num_train_epochs 10 --learning_rate 2e-5 --seed 12
 
 ```
 Add parameter `--use_mt_uncertainty` to use the uncertainty sampling technique described in the paper. To use uniform sampling use `--uniform_mt_sampling`. Otherwise, the tasks will be sequentially sampled until data runs out.
+To freeze layers, use `--freeze_encoder_layers 0-N`. Results in the paper are based on `N=6` for base and `N=12` for large models.
+
 ### Usage 
 ```
 usage: run.py [-h] --model_name_or_path MODEL_NAME_OR_PATH --data_dir DATA_DIR
