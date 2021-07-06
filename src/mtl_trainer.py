@@ -1,7 +1,7 @@
 import os
 import logging
 from dataclasses import dataclass, field
-from typing import Dict, Optional, Callable
+from typing import Dict, Optional, Callable, Tuple
 
 import torch
 import numpy as np
@@ -10,6 +10,7 @@ from torch.utils.data.dataset import Dataset
 from torch.utils.data.distributed import DistributedSampler
 from torch.utils.data.sampler import RandomSampler
 from transformers import Trainer, TrainingArguments, EvalPrediction, glue_output_modes
+from transformers.optimization import AdamW, get_linear_schedule_with_warmup
 
 from src.data.glue_utils import compute_glue_metrics
 
@@ -34,6 +35,10 @@ class MultiTaskTrainingArguments(TrainingArguments):
             "it will be set to the closest of 0.0 or 1.0."
         },
     )
+    warmup_proportion: float = field(
+        default=0.1,
+        metadata={"help": "0.0 to args.lr for warmup_proportion * num_training_steps"},
+    )
 
 
 class MultiTaskTrainer(Trainer):
@@ -51,6 +56,54 @@ class MultiTaskTrainer(Trainer):
         self.data_args = data_args
         self.eval_datasets = eval_datasets
         self.test_datasets = test_datasets
+        self.eval_results = {}
+
+    def get_optimizers(
+        self, num_training_steps: int
+    ) -> Tuple[torch.optim.Optimizer, torch.optim.lr_scheduler.LambdaLR]:
+        """
+        Setup the optimizer and the learning rate scheduler.
+
+        We provide a reasonable default that works well.
+        If you want to use something else, you can pass a tuple in the Trainer's init,
+        or override this method in a subclass.
+        """
+        if self.optimizers is not None:
+            return self.optimizers
+        # Prepare optimizer and schedule (linear warmup and decay)
+        no_decay = ["bias", "LayerNorm.weight"]
+        optimizer_grouped_parameters = [
+            {
+                "params": [
+                    p
+                    for n, p in self.model.named_parameters()
+                    if not any(nd in n for nd in no_decay)
+                ],
+                "weight_decay": self.args.weight_decay,
+            },
+            {
+                "params": [
+                    p
+                    for n, p in self.model.named_parameters()
+                    if any(nd in n for nd in no_decay)
+                ],
+                "weight_decay": 0.0,
+            },
+        ]
+        num_warmup_steps = (
+            self.args.warmup_proportion * num_training_steps
+        )  # this is different from overridden function
+        optimizer = AdamW(
+            optimizer_grouped_parameters,
+            lr=self.args.learning_rate,
+            eps=self.args.adam_epsilon,
+        )
+        scheduler = get_linear_schedule_with_warmup(
+            optimizer,
+            num_warmup_steps=num_warmup_steps,
+            num_training_steps=num_training_steps,  # this is different from overridden function
+        )
+        return optimizer, scheduler
 
     def get_train_dataloader(self) -> DataLoader:
         if self.args.use_mt_uncertainty:
@@ -223,7 +276,8 @@ class MultiTaskTrainer(Trainer):
             eval_result = super().evaluate(
                 eval_dataset=eval_dataset, prediction_loss_only=True
             )
-            for key, value in eval_result.items():
+            self.update_eval_results(eval_result, task_name)
+            for key, value in self.eval_results[task_name].items():
                 logger.info("  %s = %s", key, value)
 
     def predict(
@@ -255,6 +309,14 @@ class MultiTaskTrainer(Trainer):
                             writer.write(
                                 "%d\t%s\n" % (index, test_dataset.get_labels()[item])
                             )
+
+    def update_eval_results(self, results, task_name):
+        self.eval_results[task_name] = self.eval_results.get(task_name, {})
+        for key, value in results.items():
+            if key in self.eval_results[task_name] and 'loss' not in key and 'epoch' not in key:
+                value = max(self.eval_results[task_name][key], value)
+            self.eval_results[task_name][key] = value
+
 
     @staticmethod
     def build_compute_metrics_fn(
