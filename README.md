@@ -82,7 +82,7 @@ docker run -v /data:$DATA_DIR $DOCKER_IMG --model_name_or_path CA-MTL-base --dat
 
 ```
 Add parameter `--use_mt_uncertainty` to use the uncertainty sampling technique described in the paper. To use uniform sampling use `--uniform_mt_sampling`. Otherwise, the tasks will be sequentially sampled until data runs out.
-To freeze layers, use `--freeze_encoder_layers 0-N`. Results in the paper are based on `N=6` for base and `N=12` for large models. Note that you may remove `--overwrite_cache` to make data loading faster.
+To freeze layers, use `--freeze_encoder_layers 0-N`. Results in the paper are based on `N=5` for base and `N=11` for large models. Note that you may remove `--overwrite_cache` to make data loading faster.
 
 ### Usage 
 ```
