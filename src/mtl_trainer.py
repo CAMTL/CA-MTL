@@ -167,7 +167,6 @@ class MultiTaskTrainer(Trainer):
                 test_batch_entropy = test_batch_entropy * test_batch_entropy_mean
 
                 if "sts-b" in tasks and "mrpc" in tasks:
-                    # Since sts_b is a regression task, the entropy value is always 0
                     stsb_idx = test_batch["task_id"] == tasks.index("sts-b")
                     mrpc_idx = test_batch["task_id"] == tasks.index("mrpc")
                     num_items = min(

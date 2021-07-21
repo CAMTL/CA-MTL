@@ -56,4 +56,5 @@ class MultiTaskDataArguments:
                 "sts-b",
                 "sst-2",
                 "qnli",
+                "mrpc"
             ]
