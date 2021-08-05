@@ -1,5 +1,5 @@
 <h1 align="center">
-<p>Conditional Adaptive Multi-Task Learning</p>
+<p>Conditional Adaptive Multi-Task Learning: a Hypernetwork for NLU</p>
 </h1>
 
 <p align="center">
